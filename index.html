@@ -111,7 +111,7 @@ if(state.checked){
 }
 content.innerHTML=`<section class="panel"><div class="row spread"><div><div class="eyebrow">Vocabolario</div><h2>Studia le parole</h2></div><label>Unità <select onchange="selectUnit(this.value)"><option value="all" ${state.unit==='all'?'selected':''}>Tutto il vocabolario · vocaboli e letture (${getUnit('all').words.length})</option>${units.map(x=>`<option value="${x.id}" ${x.id===state.unit?'selected':''}>${esc(x.name)}</option>`).join('')}</select></label></div><div class="row spread"><span class="muted">Parola ${state.position+1} di ${u.words.length} · ordine casuale · Enter: avanti / verifica · Shift+Enter: indietro</span><label>Direzione <select aria-label="Practice direction" onchange="changeMode(this.value)"><option value="it-en" ${state.mode==='it-en'?'selected':''}>Italiano → English</option><option value="en-it" ${state.mode==='en-it'?'selected':''}>English → italiano</option><option value="mixed" ${state.mode==='mixed'?'selected':''}>Misto · random</option></select></label></div><div class="word">${esc(state.reverse?w[1]:w[0])}</div>${state.mode==='mixed'?`<div class="muted" style="text-align:center;font-size:.85rem;margin-top:-5px">${state.reverse?'English → italiano':'Italiano → English'}</div>`:''}<div class="example-sentence">${esc(state.reverse?w[3]:w[2])}</div><div class="meaning">${feedback}</div><div class="bigbuttons">${!state.checked?'<button onclick="checkAnswer()">Check answer ↵</button>':`<button class="secondary" onclick="mark(false)">Add to review</button><button onclick="mark(true)">${state.correct?'Correct — next word →':'Count as correct →'}</button><button class="secondary" onclick="resetAnswer();render();focusAnswer()">Try again</button>`}</div><div class="bigbuttons"><button class="secondary" onclick="shuffleUnit();resetAnswer();render();focusAnswer()" title="Shuffle all words and start a new practice round">Mescola parole ↻</button><button class="secondary" onclick="changeWord(-1)">← Precedente</button><button class="secondary" onclick="changeWord(1)">Successiva →</button><button class="secondary" onclick="state.tab='read';state.reading=Math.max(0,readings.findIndex(r=>r.unit===(u.id==='all'?(cumulativeEntries()[state.index]?.source):u.id)));render()">Leggi nel contesto</button></div></section>`;
 }
-if(state.tab==='read'){let r=readings[state.reading];let html=esc(r.text).replace(/\n\n/g,'</p><p>').replace(/\[\[([^\]|]+)\|([^\]]+)\]\]/g,(_,a,b)=>`<button class="term" data-gloss="${esc(b)}" data-term="${esc(a)}">${esc(a)}</button>`);content.innerHTML=`<section class="panel"><div class="row spread"><div><div class="eyebrow">Letture in contesto</div><h2>${esc(r.title)}</h2><p class="muted">${esc(r.sub)}</p></div><select onchange="state.reading=+this.value;state.quiz={};state.quizOrders={};state.gloss='';render()">${readings.map((x,i)=>`<option value="${i}" ${i===state.reading?'selected':''}>${esc(x.title)}</option>`).join('')}</select></div><p class="muted">Tocca le parole sottolineate per vedere il significato.</p><div class="reading"><p>${html}</p></div><div class="gloss" id="gloss">${state.gloss||'Seleziona una parola nel testo.'}</div></section><section class="panel"><h3>Comprensione</h3>${r.questions.map((q,i)=>`<div class="q"><strong>${i+1}. ${esc(q[0])}</strong>${readingOptions(q,i).map(j=>`<button class="${state.quiz[i]===j?'chosen':''}" onclick="state.quiz[${i}]=${j};render()">${esc(q[1][j])}</button>`).join('')}${state.quiz[i]!==undefined?`<div class="feedback">${state.quiz[i]===q[2]?'✓ Esatto!':'Riprova: rileggi il testo.'}</div>`:''}</div>`).join('')}</section>`;content.querySelectorAll('.term').forEach(b=>b.onclick=()=>{state.gloss='<strong>'+esc(b.dataset.term)+'</strong> — '+esc(b.dataset.gloss);document.getElementById('gloss').innerHTML=state.gloss})}
+if(state.tab==='read'){let r=readings[state.reading];let html=esc(r.text).replace(/\n\n/g,'</p><p>').replace(/\[\[([^\]|]+)\|([^\]]+)\]\]/g,(_,a,b)=>`<button class="term" data-gloss="${b}" data-term="${a}">${a}</button>`);content.innerHTML=`<section class="panel"><div class="row spread"><div><div class="eyebrow">Letture in contesto</div><h2>${esc(r.title)}</h2><p class="muted">${esc(r.sub)}</p></div><select onchange="state.reading=+this.value;state.quiz={};state.quizOrders={};state.gloss='';render()">${readings.map((x,i)=>`<option value="${i}" ${i===state.reading?'selected':''}>${esc(x.title)}</option>`).join('')}</select></div><p class="muted">Tocca le parole sottolineate per vedere il significato.</p><div class="reading"><p>${html}</p></div><div class="gloss" id="gloss">${state.gloss||'Seleziona una parola nel testo.'}</div></section><section class="panel"><h3>Comprensione</h3>${r.questions.map((q,i)=>`<div class="q"><strong>${i+1}. ${esc(q[0])}</strong>${readingOptions(q,i).map(j=>`<button class="${state.quiz[i]===j?'chosen':''}" onclick="state.quiz[${i}]=${j};render()">${esc(q[1][j])}</button>`).join('')}${state.quiz[i]!==undefined?`<div class="feedback">${state.quiz[i]===q[2]?'✓ Esatto!':'Riprova: rileggi il testo.'}</div>`:''}</div>`).join('')}</section>`;content.querySelectorAll('.term').forEach(b=>b.onclick=()=>{state.gloss='<strong>'+esc(b.dataset.term)+'</strong> — '+esc(b.dataset.gloss);document.getElementById('gloss').innerHTML=state.gloss})}
 if(state.tab==='contrast'){let c=contrasts[state.contrastIndex];if(!state.contrastOrder.length)state.contrastOrder=shuffledIndices(c.options.length);let chosen=state.contrastChoice;content.innerHTML=`<section class="panel"><div class="eyebrow">Vocabolario di precisione</div><h2>Parole simili, significati diversi</h2><p class="muted">Scegli il termine italiano più preciso per la descrizione. Le opzioni cambiano posizione a ogni nuova domanda.</p><p><strong>Domanda ${state.contrastIndex+1} di ${contrasts.length}</strong></p><div class="reading"><p>${esc(c.prompt)}</p></div><div class="q">${state.contrastOrder.map(i=>`<button class="${chosen===c.options[i]?'chosen':''}" onclick="chooseContrast(contrasts[state.contrastIndex].options[${i}])">${esc(c.options[i])}</button>`).join('')}</div>${chosen!==null?`<div class="answer-feedback ${chosen===c.answer?'correct':'incorrect'}"><strong>${chosen===c.answer?'✓ Esatto!':'Non proprio.'}</strong><p>Risposta: <strong>${esc(c.answer)}</strong></p><p>${esc(c.why)}</p></div><div class="bigbuttons"><button onclick="nextContrast()">Prossima domanda →</button><button class="secondary" onclick="resetContrast();render()">Ricomincia</button></div>`:''}</section>`;}
 if(state.tab==='review'){let misses=Object.keys(stored.missed).filter(k=>stored.missed[k]);content.innerHTML=`<section class="panel"><div class="eyebrow">Ripasso personalizzato</div><h2>Le parole da rivedere</h2><p class="muted">Le risposte segnate “Da ripassare” appaiono qui. Il progresso resta nel browser di questo dispositivo.</p><div class="grid">${misses.length?misses.map(k=>{const [u,w]=k.split('|');const entry=getUnit(u)?.words.find(x=>x[0]===w);return entry?`<button class="tile" onclick="openReviewWord('${u}',${getUnit(u).words.indexOf(entry)})"><strong>${esc(w)}</strong><small>${esc(entry[1])} → ripassa</small></button>`:''}).join(''):'<p>Nessuna parola da ripassare. Continua a studiare!</p>'}</div><p><strong>${count()}</strong> parole conosciute</p></section>`}}
 // English checks are case/punctuation insensitive. Listed alternatives prevent
@@ -292,6 +292,76 @@ function mark(yes){let w=words()[state.index],k=progressKeyForWord(w);stored.kno
       ['lo smarrimento','disorientation or bewilderment','Lo smarrimento iniziale lascia spazio alla fiducia.','Initial disorientation gives way to trust.'],
       ['la vulnerabilità','vulnerability','La vulnerabilità può rendere più autentico l’incontro.','Vulnerability can make an encounter more genuine.'],
       ['l’appartenenza','belonging','Il cammino solleva domande sull’appartenenza.','The pilgrimage raises questions about belonging.']
+    ]},
+    {id:"local-directions",name:"Chiedere la strada e organizzare un passaggio",desc:"Indicazioni a voce, fermate e corse su prenotazione",words:[
+      ["imboccare","enter a road","Imbocchi il vicolo accanto alla fontana.","Take the lane next to the fountain."],
+      ["costeggiare","follow alongside","Costeggi il muro fino alla curva.","Follow the wall as far as the bend."],
+      ["sbucare","come out","Il vicolo sbuca sulla provinciale.","The lane comes out onto the provincial road."],
+      ["in fondo a","at the far end of","La pensilina è in fondo alla discesa.","The bus shelter is at the far end of the downhill stretch."],
+      ["a monte di","uphill from","La chiesetta è a monte della fermata.","The little church is uphill from the bus stop."],
+      ["a valle di","downhill from","Il ponte è a valle del paese.","The bridge is downhill from the village."],
+      ["la scorciatoia","shortcut","C’è una scorciatoia dietro la chiesa.","There is a shortcut behind the church."],
+      ["la pensilina","bus shelter","Aspettate sotto la pensilina.","Wait under the bus shelter."],
+      ["la corsa feriale","weekday service","La corsa feriale passa alle sette.","The weekday service comes at seven."],
+      ["la corsa festiva","Sunday and public holiday service","La corsa festiva segue un altro orario.","The Sunday and public holiday service follows a different schedule."],
+      ["la fermata a richiesta","request stop","È una fermata a richiesta, quindi faccia un cenno al conducente.","It is a request stop, so signal to the driver."],
+      ["il servizio a chiamata","on-demand service","Per il servizio a chiamata bisogna telefonare il giorno prima.","For the on-demand service you need to call the day before."]
+    ]},
+    {id:"local-food",name:"In bottega e a tavola",desc:"Prodotti del posto, quantità e preparazioni",words:[
+      ["l’affettato","cold cuts","Con questo pane ci sta bene un po’ di affettato.","Some cold cuts would go well with this bread."],
+      ["l’etto","one hundred grams","Mi fa un etto di prosciutto?","Could I have a hundred grams of prosciutto?"],
+      ["sfuso","sold loose","Il formaggio grattugiato si vende anche sfuso.","Grated cheese is also sold loose."],
+      ["stagionato","aged","Per il viaggio prenderei un pecorino stagionato.","For the trip I would take an aged pecorino."],
+      ["la farcitura","filling","Che farcitura mi consiglia per la focaccia?","What filling do you recommend for the focaccia?"],
+      ["il banco gastronomia","deli counter","Al banco gastronomia vendono anche piatti pronti.","The deli counter also sells prepared dishes."],
+      ["da asporto","to go","Mi prepara due porzioni da asporto?","Could you prepare two portions to go?"],
+      ["la specialità della casa","house specialty","Qual è la specialità della casa?","What is the house specialty?"],
+      ["di produzione propria","made in-house","Queste conserve sono di produzione propria.","These preserves are made in-house."],
+      ["di stagione","in season","Che verdure avete di stagione?","What vegetables are in season?"],
+      ["il condimento","dressing or seasoning","Posso avere il condimento a parte?","Could I have the dressing on the side?"],
+      ["il contorno","side dish","Come contorno prenderei le verdure.","I would have the vegetables as a side dish."]
+    ]},
+    {id:"local-conversation",name:"Capire l’italiano di tutti i giorni",desc:"Espressioni colloquiali per conversare e cogliere il tono",words:[
+      ["figurati","don't mention it","«Grazie del favore!» «Figurati!»","“Thanks for doing me a favor!” “Don’t mention it!”"],
+      ["magari","if only","«Hai già finito la salita?» «Magari!»","“Are you done with the climb already?” “If only!”"],
+      ["mica","not at all","Non è mica tardi: il negozio è ancora aperto.","It isn’t late at all. The shop is still open."],
+      ["dai","come on","Dai, ormai mancano solo cinque minuti.","Come on, there are only five minutes left now."],
+      ["a occhio e croce","roughly","A occhio e croce ci vuole mezz’ora.","Roughly speaking, it takes half an hour."],
+      ["a due passi","a stone's throw away","La fontana è a due passi da qui.","The fountain is a stone’s throw from here."],
+      ["essere di strada","be on the way","La piazza è di strada per chi va al ponte.","The square is on the way to the bridge."],
+      ["fare un salto","pop by","Più tardi faccio un salto in bottega.","Later I’ll pop by the shop."],
+      ["capitare da queste parti","happen to be in the area","Se dovessi capitare da queste parti in autunno, passa a salutarci.","If you happen to be in the area in the fall, come say hello."],
+      ["cavarsela","manage","Con un po’ di italiano me la cavo.","I get by with a little Italian."],
+      ["farsi sentire","get in touch","Non dimenticare di farti sentire quando arrivi.","Remember to get in touch when you arrive."],
+      ["volendo","if you like","Volendo, possiamo fermarci a prendere un caffè.","If you like, we can stop for a coffee."]
+    ]},
+    {id:"local-traditions",name:"Farsi raccontare il paese",desc:"Tradizioni, feste e cambiamenti raccontati dagli abitanti",words:[
+      ["la sagra","local food festival","La sagra della castagna si tiene in autunno.","The chestnut festival takes place in the fall."],
+      ["la festa patronale","patron saint festival","Per la festa patronale tornano molti di quelli che vivono fuori.","Many people who live elsewhere come back for the patron saint festival."],
+      ["la frazione","outlying village","La chiesa si trova in una frazione del comune.","The church is in an outlying village within the municipality."],
+      ["la contrada","local district","Ogni contrada prepara il proprio stendardo.","Each local district prepares its own banner."],
+      ["il corteo","parade","Il corteo parte dalla piazza.","The parade starts in the square."],
+      ["la processione","religious procession","La processione passa davanti alla chiesa.","The religious procession passes in front of the church."],
+      ["la rievocazione","historical reenactment","La rievocazione ricostruisce un episodio della storia locale.","The historical reenactment recreates an episode from local history."],
+      ["tramandare","pass down","La nonna ha tramandato la ricetta a tutta la famiglia.","Grandma passed the recipe down to the whole family."],
+      ["l’usanza","custom","Da dove viene l’usanza di portare gli stendardi?","Where does the custom of carrying banners come from?"],
+      ["lo spopolamento","depopulation","Lo spopolamento ha cambiato la vita del paese.","Depopulation has changed village life."],
+      ["trasferirsi","move away or relocate","Molti si sono trasferiti in città per lavoro.","Many moved to the city for work."],
+      ["essere originario di","be originally from","Mio nonno era originario di questa valle.","My grandfather was originally from this valley."]
+    ]},
+    {id:"local-services",name:"Sbrigare commissioni nei piccoli paesi",desc:"Orari, rifornimenti e come chiedere a chi rivolgersi",words:[
+      ["fare rifornimento","stock up","Conviene fare rifornimento prima di lasciare il paese.","It is worth stocking up before leaving the village."],
+      ["i beni di prima necessità","basic necessities","L’emporio tiene i beni di prima necessità.","The general store stocks basic necessities."],
+      ["l’orario continuato","opening straight through","Il sabato fanno orario continuato.","On Saturdays they stay open straight through."],
+      ["l’orario spezzato","split opening hours","Il negozio fa orario spezzato e chiude a pranzo.","The shop has split opening hours and closes at lunchtime."],
+      ["la chiusura settimanale","weekly closing day","La chiusura settimanale è il mercoledì.","The weekly closing day is Wednesday."],
+      ["nei giorni pari","on even-numbered days","Lo sportello apre nei giorni pari.","The counter opens on even-numbered days."],
+      ["su appuntamento","by appointment","Il laboratorio riceve su appuntamento.","The workshop sees customers by appointment."],
+      ["lo sportello","service counter","Lo sportello postale chiude a mezzogiorno.","The post office counter closes at noon."],
+      ["il punto di ritiro","pickup point","L’emporio fa anche da punto di ritiro per i pacchi.","The general store also serves as a pickup point for parcels."],
+      ["la ricevuta","receipt","Conservi la ricevuta finché non ha ritirato il pacco.","Keep the receipt until you have picked up the parcel."],
+      ["rivolgersi a","ask someone for help","Per spedire il pacco può rivolgersi all’ufficio postale.","To send the parcel, you can ask at the post office."],
+      ["segnalare un guasto","report a fault","Vorrei segnalare un guasto alla fontanella.","I’d like to report a fault with the drinking fountain."]
     ]}
   ];
   const advancedReadings = [
@@ -301,8 +371,154 @@ function mark(yes){let w=words()[state.index],k=progressKeyForWord(w);stored.kno
     {title:'Una giornata secondo la Regola',sub:'Comunità, ascolto, tempo e misura · C1',unit:'rule',text:`La vita di un [[cenobio|communal monastery]] si distingue da quella dell’eremita perché il tempo e lo spazio vengono condivisi. Il [[cenobita|cenobitic monk]] non organizza ogni gesto secondo la propria preferenza: la comunità richiede una disciplina che si apprende, tra l’altro, durante il [[noviziato|novitiate]]. La [[professione monastica|monastic profession]] esprime il carattere duraturo di questo impegno.\n\nLa [[liturgia delle ore|Liturgy of the Hours]] distribuisce la preghiera lungo la giornata: dalle [[lodi|Lauds or morning prayer]] alla [[compieta|Compline or night prayer]]. La [[lectio divina|prayerful reading of Scripture]] propone una lettura lenta e meditativa, mentre il [[lavoro manuale|manual labor]] ricorda che la vita spirituale non è separata dalle necessità materiali. Anche l’[[accoglienza|hospitality or welcome]] degli ospiti richiede attenzione concreta.\n\nPer comprendere questa forma di vita, non basta immaginare un insieme di divieti. La [[discrezione|moderation or discernment]] richiama la capacità di misurare le proprie decisioni, e l’[[ascolto|attentive listening]] invita a non considerare la volontà individuale l’unico criterio. Che cosa può insegnare una tradizione simile a chi percorre il cammino senza appartenere a una comunità monastica? Forse, almeno, la differenza tra scegliere il proprio ritmo e imparare ad abitare il tempo insieme agli altri.`,questions:[['Qual è la differenza fondamentale tra cenobita ed eremita?',['La condivisione di una vita regolata','Il divieto assoluto di lavorare','La necessità di viaggiare'],0],['Perché il testo cita il lavoro manuale?',['Per collegare spiritualità e necessità quotidiane','Per negare il valore della preghiera','Per descrivere un mestiere moderno'],0],['Quale conclusione propone il testo?',['Riflettere sul rapporto tra ritmo personale e vita comune','Tutti devono prendere i voti','Camminare è un obbligo monastico'],0]]},
     {title:'Leggere una chiesa come un testo',sub:'Iconografia e stratificazioni artistiche · C1',unit:'medieval',text:`Un edificio sacro può essere letto come un testo composto in più epoche. Il [[portale|monumental doorway]] presenta talvolta una [[lunetta|lunette above a doorway]] decorata; un [[bassorilievo|bas-relief]] introduce già all’esterno temi che proseguono all’interno. Oltrepassata la soglia, lo sguardo può incontrare una [[pala d’altare|altarpiece]] la cui [[predella|lower panel of an altarpiece]] racconta episodi in piccole scene. La [[doratura|gilding]] non è soltanto un ornamento: modifica il rapporto tra la luce e l’immagine.\n\nNell’iconografia, un [[nimbo|halo or nimbus]] identifica frequentemente una figura sacra; la [[mandorla|almond-shaped sacred aureole]] la colloca in uno spazio simbolico particolare. L’organizzazione dell’edificio contribuisce anch’essa alla lettura: il [[transetto|transept]] interrompe l’asse della navata e l’[[abside|apse]] attira l’attenzione verso un punto liturgicamente significativo.\n\nLo storico dell’arte, tuttavia, deve distinguere tra osservazione e ipotesi. L’[[attribuzione|artistic attribution]] di un dipinto può essere incerta; un [[rifacimento|remaking or later alteration]] può aver trasformato le strutture precedenti. Descrivere una chiesa come «medievale» è dunque spesso solo l’inizio della ricerca, non la sua conclusione.`,questions:[['Perché il testo paragona la chiesa a un testo?',['Perché conserva elementi di epoche e funzioni diverse','Perché ogni muro contiene una citazione latina','Perché gli edifici non cambiano mai'],0],['Qual è la differenza tra osservazione e attribuzione?',['L’attribuzione può essere una proposta da verificare','L’osservazione è sempre falsa','Sono due parole equivalenti'],0],['Che cosa rende complessa la datazione di una chiesa?',['I rifacimenti e le stratificazioni','L’assenza di decorazioni in ogni caso','Il numero dei pellegrini'],0]]},
     {title:'Una conversazione alla foresteria',sub:'Richieste, cortesia e organizzazione · B2',unit:'hospitality',text:`«Buonasera, stiamo percorrendo il Cammino di San Benedetto. Avete [[disponibilità|availability]] per due persone domani?»\n\n«Sì, ma è meglio effettuare una [[prenotazione|reservation]]. Avete la [[credenziale|pilgrim passport]]?»\n\n«Certamente. Vorremmo sapere se il [[pernottamento|overnight stay]] include la colazione e se offrite la [[mezza pensione|half-board]].»\n\n«Non prepariamo la cena. Si può cenare in paese. Qui l’[[ospitalità|hospitality]] è semplice; in alcune strutture si parla di alloggio a [[donativo|donation-based hospitality]], cioè con un’[[offerta libera|voluntary donation]], ma noi applichiamo una tariffa fissa.»\n\n«Grazie della spiegazione. Possiamo ottenere un [[timbro|stamp]] sulla credenziale? E sapete dove si trova un punto di [[ristoro|refreshment or rest stop]] lungo la tappa successiva?»\n\n«Certo. Vi indico anche la [[farmacia di turno|on-duty pharmacy]]; quanto ai trasporti, controllate bene la [[coincidenza|connection or coincidence]] dell’autobus, perché gli orari possono variare.»\n\nI pellegrini ringraziano. La conversazione è breve, ma permette di chiarire le condizioni dell’alloggio senza dare per scontato ciò che è incluso.`,questions:[['Quale formula evita un malinteso economico?',['Chiedere se la tariffa è fissa o a donativo','Chiedere solo l’orario del pranzo','Evitare di parlare del pernottamento'],0],['Cosa richiedono i pellegrini per la credenziale?',['Un timbro','Una nuova fotografia','Una firma del sindaco'],0],['Quale dettaglio del trasporto occorre verificare?',['La coincidenza dell’autobus','Il colore dell’autobus','La dimensione dello zaino'],0]]},
-    {title:'Che cosa significa mettersi in cammino?',sub:'Una riflessione sul pellegrinaggio · C1',unit:'reflection',text:`All’inizio di un lungo itinerario, la [[perseveranza|perseverance]] sembra una qualità soprattutto fisica: avanzare nonostante la stanchezza. Col passare dei giorni, però, può trasformarsi in una capacità di adattamento. La [[rinuncia|renunciation]] a ciò che è superfluo non produce automaticamente saggezza; può, tuttavia, creare lo spazio per il [[discernimento|discernment]]. Distinguere una difficoltà necessaria da un rischio evitabile richiede giudizio, non orgoglio.\n\nIl [[distacco|detachment]] dalle abitudini quotidiane può favorire la [[contemplazione|contemplation]]. Camminando, la [[consapevolezza|awareness]] non riguarda soltanto il proprio corpo, ma anche i luoghi attraversati e le persone incontrate. Varcare la [[soglia|threshold]] di una chiesa o di una casa che offre ospitalità può rappresentare un passaggio simbolico. L’[[essenzialità|simplicity or focus on essentials]] non coincide allora con una povertà esibita, ma con un diverso ordine di priorità.\n\nNell’incontro con uno sconosciuto possono emergere [[gratitudine|gratitude]] e [[vulnerabilità|vulnerability]] insieme. A volte arriva persino lo [[smarrimento|disorientation or bewilderment]]: non sapere subito dove andare, né come interpretare un’esperienza. Il cammino non promette di risolvere ogni domanda sull’[[appartenenza|belonging]], ma può insegnare a sostare davanti a quelle domande senza pretendere risposte immediate.`,questions:[['Come cambia il senso di perseveranza nel testo?',['Da resistenza fisica a capacità di adattamento','Da volontà ad assenza di fatica','Da viaggio a semplice turismo'],0],['Quale rapporto viene proposto tra rinuncia e saggezza?',['La rinuncia può creare spazio per riflettere, ma non garantisce saggezza','La rinuncia garantisce sempre saggezza','La rinuncia non ha alcun significato'],0],['Come si conclude la riflessione?',['Alcune domande possono essere accolte senza soluzione immediata','Ogni pellegrino trova necessariamente risposte definitive','La strada elimina ogni incertezza'],0]]}
+    {title:'Che cosa significa mettersi in cammino?',sub:'Una riflessione sul pellegrinaggio · C1',unit:'reflection',text:`All’inizio di un lungo itinerario, la [[perseveranza|perseverance]] sembra una qualità soprattutto fisica: avanzare nonostante la stanchezza. Col passare dei giorni, però, può trasformarsi in una capacità di adattamento. La [[rinuncia|renunciation]] a ciò che è superfluo non produce automaticamente saggezza; può, tuttavia, creare lo spazio per il [[discernimento|discernment]]. Distinguere una difficoltà necessaria da un rischio evitabile richiede giudizio, non orgoglio.\n\nIl [[distacco|detachment]] dalle abitudini quotidiane può favorire la [[contemplazione|contemplation]]. Camminando, la [[consapevolezza|awareness]] non riguarda soltanto il proprio corpo, ma anche i luoghi attraversati e le persone incontrate. Varcare la [[soglia|threshold]] di una chiesa o di una casa che offre ospitalità può rappresentare un passaggio simbolico. L’[[essenzialità|simplicity or focus on essentials]] non coincide allora con una povertà esibita, ma con un diverso ordine di priorità.\n\nNell’incontro con uno sconosciuto possono emergere [[gratitudine|gratitude]] e [[vulnerabilità|vulnerability]] insieme. A volte arriva persino lo [[smarrimento|disorientation or bewilderment]]: non sapere subito dove andare, né come interpretare un’esperienza. Il cammino non promette di risolvere ogni domanda sull’[[appartenenza|belonging]], ma può insegnare a sostare davanti a quelle domande senza pretendere risposte immediate.`,questions:[['Come cambia il senso di perseveranza nel testo?',['Da resistenza fisica a capacità di adattamento','Da volontà ad assenza di fatica','Da viaggio a semplice turismo'],0],['Quale rapporto viene proposto tra rinuncia e saggezza?',['La rinuncia può creare spazio per riflettere, ma non garantisce saggezza','La rinuncia garantisce sempre saggezza','La rinuncia non ha alcun significato'],0],['Come si conclude la riflessione?',['Alcune domande possono essere accolte senza soluzione immediata','Ogni pellegrino trova necessariamente risposte definitive','La strada elimina ogni incertezza'],0]]},
+    {title:"La fermata è giù al ponte",sub:"Chiedere indicazioni a un abitante · B2–C1",unit:"local-directions",
+      text:`«Scusi, per la fermata del ponte mi conviene prendere la [[scorciatoia|shortcut]] dietro la chiesa?»
+
+«Con lo zaino, io farei la strada larga. Dalla piazza deve [[imboccare|enter a road]] il vicolo della fontana e [[costeggiare|follow alongside]] il muro. Dopo la curva dovrebbe [[sbucare|come out]] sulla provinciale. La [[pensilina|bus shelter]] è [[in fondo a|at the far end of]] quella discesa, subito prima del ponte. La fermata del municipio è [[a monte di|uphill from]] questa piazza. A lei serve quella [[a valle di|downhill from]] noi.»
+
+«Ho fotografato l’orario. La [[corsa feriale|weekday service]] delle sette vale anche domani, che è domenica?»
+
+«Guardi la colonna della [[corsa festiva|Sunday and public holiday service]]. Per il sabato, invece, controlli le note: certe corse feriali si fanno solo dal lunedì al venerdì. E tenga presente che quella del ponte è una [[fermata a richiesta|request stop]]: si faccia vedere e alzi la mano. Il [[servizio a chiamata|on-demand service]] è un’altra cosa: per quello deve telefonare prima, altrimenti il mezzo non passa.»`,
+      questions:[
+        ["Quale fermata deve raggiungere il pellegrino?",["Quella del municipio, sopra la piazza","Quella prima del ponte, in fondo alla discesa","Quella dietro la chiesa, all’inizio della scorciatoia"],1],
+        ["Quale orario deve consultare per la domenica?",["Quello della corsa feriale","Quello del municipio","Quello della corsa festiva"],2],
+        ["Che differenza c’è tra i due servizi descritti alla fine?",["Alla fermata a richiesta si fa un cenno. Il servizio a chiamata si prenota.","Alla fermata a richiesta si prenota. Il servizio a chiamata si ferma comunque.","Per entrambi basta aspettare sotto la pensilina."],0]
+      ]
+    },
+    {title:"Qualcosa da portare nello zaino",sub:"Fare la spesa e chiedere come si prepara un piatto · B2–C1",unit:"local-food",
+      text:`Al [[banco gastronomia|deli counter]] chiedo se mi possono preparare qualcosa [[da asporto|to go]]. «Per la [[farcitura|filling]] della focaccia, che cosa mi consiglia? Domani cammino e vorrei qualcosa che non coli nello zaino.»
+
+«Un [[etto|one hundred grams]] di [[affettato|cold cuts]] e un po’ di pecorino [[stagionato|aged]]. Le olive le vendiamo anche come prodotto [[sfuso|sold loose]]: può prenderne giusto una manciata.»
+
+«E se mi fermo qui a pranzo, qual è la [[specialità della casa|house specialty]]?»
+
+«Oggi abbiamo la zuppa di farro. Il pane è [[di produzione propria|made in-house]] e come [[contorno|side dish]] ci sono verdure [[di stagione|in season]].»
+
+«Allora la zuppa la mangio qui e la focaccia la tengo per domani. Per le verdure posso avere il [[condimento|dressing or seasoning]] a parte?»`,
+      questions:[
+        ["Perché il cliente chiede consiglio sulla farcitura?",["Vuole evitare che il ripieno sporchi lo zaino.","Vuole cucinare la focaccia da sé.","Vuole conoscere la ricetta della zuppa."],0],
+        ["Che cosa permette di fare la vendita di prodotto sfuso?",["Scambiare le olive con il pane","Ordinare le olive solo a peso fisso","Comprare la quantità desiderata"],2],
+        ["Che cosa mangerà il cliente subito?",["La focaccia con il pecorino","La zuppa di farro","L’affettato comprato per la tappa"],1]
+      ]
+    },
+    {title:"Figurati, siamo di strada",sub:"Una chiacchierata con due abitanti · C1",unit:"local-conversation",
+      text:`«Ma guarda, un pellegrino. Hai già finito per oggi?»
+
+«[[Magari|if only]]! Mi mancano ancora tre chilometri. Però per [[cavarsela|manage]] in paese, un po’ d’italiano aiuta.»
+
+«[[Dai|come on]], allora vieni con noi fino alla piazza. È [[a due passi|a stone's throw away]], e pensavamo di [[fare un salto|pop by]] al forno. Dovrebbe [[essere di strada|be on the way]] anche per te.»
+
+«Grazie, non vorrei farvi perdere tempo.»
+
+«[[Figurati|don't mention it]]! Non ci fai [[mica|not at all]] perdere tempo. [[A occhio e croce|roughly]], dal forno al tuo alloggio ci vogliono altri venti minuti. [[Volendo|if you like]], ti accompagniamo anche fino al bivio.»
+
+«Che gentili. Questa è la prima volta che mi capita di passare di qui.»
+
+«In autunno c’è la festa delle castagne. Se dovessi [[capitare da queste parti|happen to be in the area]], passa a salutarci. E per [[farsi sentire|get in touch]] basta anche un messaggio!»`,
+      questions:[
+        ["Che cosa comunica «Magari!» in questa conversazione?",["Che ha già finito la tappa","Che forse ripartirà domani","Che vorrebbe aver finito, ma deve ancora camminare"],2],
+        ["Che cosa significa che il forno dovrebbe «essere di strada»?",["Perché vende il pane solo ai passanti","Si trova lungo il percorso che il pellegrino deve fare.","Perché si trova esattamente a metà tappa"],1],
+        ["Che sfumatura ha «volendo» nella proposta finale?",["Presenta l’accompagnamento come una possibilità.","Dice che accompagnarlo è indispensabile.","Fa capire che devono cambiare strada."],0]
+      ]
+    },
+    {title:"Com’era la festa una volta?",sub:"Ascoltare un racconto e fare domande · C1",unit:"local-traditions",
+      text:`«È di qui, di origine?» chiedo a un uomo che appende uno stendardo. «Sono nato in una [[frazione|outlying village]] qui sopra», mi risponde. «Quando i giovani hanno cominciato a [[trasferirsi|move away or relocate]] per lavoro, sono partito anch’io. Per la [[festa patronale|patron saint festival]], però, cerco sempre di tornare.»
+
+Per lui, [[essere originario di|be originally from]] quella frazione significa anche tornare per la festa.
+
+«E quella di domani è la stessa festa della [[sagra|local food festival]] che ho visto sul manifesto?»
+
+«No, la sagra sarà in ottobre. Domani, invece, ogni [[contrada|local district]] porta il suo stendardo. La mattina c’è la [[processione|religious procession]] con la statua del santo. Nel pomeriggio c’è un [[corteo|parade]] in costume: è una [[rievocazione|historical reenactment]] dell’antico mercato.»
+
+«Da quanto tempo si fa?»
+
+«L’[[usanza|custom]] di portare gli stendardi risale ai tempi dei miei bisnonni, almeno a sentire mia nonna. Il corteo in costume è molto più recente. Con lo [[spopolamento|depopulation]] sono cambiate tante cose. Per [[tramandare|pass down]] la festa, ormai si danno da fare anche quelli che qui non ci abitano più.»`,
+      questions:[
+        ["Per quale occasione l’uomo cerca di tornare in paese?",["Per la sagra di ottobre","Per la festa patronale","Per il mercato settimanale"],1],
+        ["Quale momento della festa ha carattere religioso?",["La processione con la statua del santo","La rievocazione dell’antico mercato","Il corteo in costume del pomeriggio"],0],
+        ["Che cosa suggerisce l’uomo quando parla dello spopolamento?",["La festa si tiene soltanto nella frazione dove è nato.","Tutte le usanze attuali risalgono ai bisnonni.","Anche chi si è trasferito contribuisce a mantenere la festa."],2]
+      ]
+    },
+    {title:"Prima che chiudano le serrande",sub:"Organizzare le commissioni di tappa · B2–C1",unit:"local-services",
+      text:`«Scusi, dove posso [[fare rifornimento|stock up]] prima di ripartire? Mi servono pane e sapone, e devo anche ritirare un pacco.»
+
+«L’emporio ha i [[beni di prima necessità|basic necessities]] e fa da [[punto di ritiro|pickup point]]. Oggi fa [[orario spezzato|split opening hours]]: riapre alle quattro. Il sabato fa [[orario continuato|opening straight through]]. Attenzione al mercoledì, che è il giorno di [[chiusura settimanale|weekly closing day]].»
+
+«E se volessi spedire indietro un po’ di roba?»
+
+«Per quello deve [[rivolgersi a|ask someone for help]] chi lavora allo [[sportello|service counter]] delle poste. Qui apre soltanto [[nei giorni pari|on even-numbered days]]. Per un pacco normale non serve andare [[su appuntamento|by appointment]]. Si faccia dare la [[ricevuta|receipt]], così ha il numero di spedizione.»
+
+«Grazie. Un’ultima cosa: vorrei [[segnalare un guasto|report a fault]] alla fontanella della piazza. Ho girato il rubinetto, ma non esce acqua.»
+
+«Glielo dico io a chi se ne occupa, quando passo in municipio.»`,
+      questions:[
+        ["Quando può tornare all’emporio dopo la pausa di oggi?",["Alle quattro del pomeriggio","A mezzogiorno in punto","Soltanto sabato"],0],
+        ["Dove deve andare per spedire le sue cose?",["Al punto di ritiro dell’emporio","Alla fontanella in piazza","Allo sportello postale in un giorno pari"],2],
+        ["Perché gli consigliano di farsi dare la ricevuta?",["Per poter usare la fontanella","Per avere il numero di spedizione","Per poter entrare in emporio di mercoledì"],1]
+      ]
+    }
   ];
+  Object.assign(accepted, {
+    "imboccare": ["enter a road","take a road","turn into"],
+    "costeggiare": ["follow alongside","go along","skirt"],
+    "sbucare": ["come out","emerge","come out onto"],
+    "in fondo a": ["at the far end of","at the end of"],
+    "a monte di": ["uphill from","above","upslope from"],
+    "a valle di": ["downhill from","below","downslope from"],
+    "la pensilina": ["bus shelter","bus stop shelter","shelter"],
+    "la corsa feriale": ["weekday service","weekday run","weekday bus service","workday service"],
+    "la corsa festiva": ["Sunday and public holiday service","sunday and holiday service","holiday service"],
+    "la fermata a richiesta": ["request stop","bus stop on request","request bus stop"],
+    "il servizio a chiamata": ["on-demand service","on demand transport","dial-a-ride service"],
+    "l’affettato": ["cold cuts","sliced deli meat","sliced cured meat"],
+    "l’etto": ["one hundred grams","a hundred grams","100 grams","hectogram"],
+    "sfuso": ["sold loose","loose","unpackaged"],
+    "stagionato": ["aged","matured","mature"],
+    "la farcitura": ["filling","stuffing"],
+    "il banco gastronomia": ["deli counter","delicatessen counter"],
+    "da asporto": ["to go","takeaway","takeout","for takeaway"],
+    "la specialità della casa": ["house specialty","house speciality"],
+    "di produzione propria": ["made in-house","house made","made on the premises","homemade"],
+    "di stagione": ["in season","seasonal"],
+    "il condimento": ["dressing or seasoning","dressing","seasoning","sauce"],
+    "il contorno": ["side dish","side"],
+    "figurati": ["don't mention it","you are welcome","no problem","don't worry about it"],
+    "magari": ["if only","i wish","if only that were true"],
+    "mica": ["not at all","not","certainly not"],
+    "dai": ["come on","go on"],
+    "a occhio e croce": ["roughly","at a rough estimate","more or less","approximately"],
+    "a due passi": ["a stone's throw away","very close","just around the corner","nearby"],
+    "essere di strada": ["be on the way","be along the way","be on one's way"],
+    "fare un salto": ["pop by","drop by","stop by"],
+    "capitare da queste parti": ["happen to be in the area","be around here by chance","happen to be around here"],
+    "cavarsela": ["manage","get by","cope"],
+    "farsi sentire": ["get in touch","be in touch","keep in touch"],
+    "volendo": ["if you like","if you want","if desired"],
+    "la sagra": ["local food festival","food festival","village festival"],
+    "la festa patronale": ["patron saint festival","patron saint's feast","patron saint celebration"],
+    "la frazione": ["outlying village","hamlet","municipal subdivision"],
+    "la contrada": ["local district","district","neighborhood","quarter"],
+    "il corteo": ["parade","procession","march"],
+    "la processione": ["religious procession","procession"],
+    "la rievocazione": ["historical reenactment","reenactment","re-enactment"],
+    "tramandare": ["pass down","hand down","pass on"],
+    "l’usanza": ["custom","tradition","practice"],
+    "lo spopolamento": ["depopulation","population decline"],
+    "trasferirsi": ["move away or relocate","move away","relocate","move"],
+    "essere originario di": ["be originally from","come from","be a native of"],
+    "fare rifornimento": ["stock up","resupply","replenish supplies"],
+    "i beni di prima necessità": ["basic necessities","essentials","basic essentials"],
+    "l’orario continuato": ["opening straight through","continuous opening hours","all day opening"],
+    "l’orario spezzato": ["split opening hours","split schedule"],
+    "la chiusura settimanale": ["weekly closing day","weekly closure"],
+    "nei giorni pari": ["on even-numbered days","on even days"],
+    "su appuntamento": ["by appointment","by prior appointment"],
+    "lo sportello": ["service counter","counter","service window"],
+    "il punto di ritiro": ["pickup point","collection point","pick up point"],
+    "rivolgersi a": ["ask someone for help","turn to","contact","go to"],
+    "segnalare un guasto": ["report a fault","report a malfunction","report a problem"]
+  });
   const existingIds = new Set(units.map(u => u.id));
   for (const unit of advancedUnits) if (!existingIds.has(unit.id)) units.push(unit);
   const existingTitles = new Set(readings.map(r => r.title));
